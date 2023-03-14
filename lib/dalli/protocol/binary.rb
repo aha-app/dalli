@@ -18,13 +18,6 @@ module Dalli
 
       private
 
-      # Retrieval Commands
-      def get(key, options = nil)
-        req = RequestFormatter.standard_request(opkey: :get, key: key)
-        write(req)
-        response_processor.get(cache_nils: cache_nils?(options))
-      end
-
       def safe_get(key, options = nil)
         req = RequestFormatter.standard_request(opkey: :getk, key: key)
         write(req)

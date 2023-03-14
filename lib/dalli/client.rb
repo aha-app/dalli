@@ -45,16 +45,13 @@ module Dalli
     #                   useful for injecting a FIPS compliant hash object.
     # - :protocol - one of either :binary or :meta, defaulting to :binary.  This sets the protocol that Dalli uses
     #               to communicate with memcached.
-    # - :safe_get - if true Dalli will use getk to get key with value and check that the keys match. This protects against 
-    #               socket corruption at the cost of additional overhead to retrieve and compare keys. 
-    #               This is currently only implemented for the binary protocol. Default: false
     #
     def initialize(servers = nil, options = {})
       @normalized_servers = ::Dalli::ServersArgNormalizer.normalize_servers(servers)
       @options = normalize_options(options)
 
-      if @options[:safe_get] == true && !@options[:protocol].nil? && @options[:protocol] != :binary
-        raise NotImplementedError, "Safe get is not implemented for the #{@options[:protocol]} protocol"
+      if !@options[:protocol].nil? && @options[:protocol] != :binary
+        raise NotImplementedError, "This fork does not support the #{@options[:protocol]} protocol because safe_get is not implemented"
       end
 
       @key_manager = ::Dalli::KeyManager.new(@options)
@@ -68,12 +65,8 @@ module Dalli
     ##
     # Get the value associated with the key.
     # If a value is not found, then +nil+ is returned.
-    def get(key, req_options = nil)
-      if @options[:safe_get] != true
-        perform(:get, key, req_options)
-      else 
-        perform(:safe_get, key, req_options)
-      end
+    def get(key, req_options = nil)   
+      perform(:safe_get, key, req_options)
     end
 
     ##
