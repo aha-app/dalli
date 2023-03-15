@@ -19,10 +19,12 @@ module Dalli
       private
 
       # Retrieval Commands
-      def get(key, options = nil)
-        req = RequestFormatter.standard_request(opkey: :get, key: key)
+      def safe_get(key, options = nil)
+        req = RequestFormatter.standard_request(opkey: :getk, key: key)
         write(req)
-        response_processor.get(cache_nils: cache_nils?(options))
+        response_processor.getk(key, cache_nils: cache_nils?(options)).last
+      rescue Dalli::SocketCorruptionError => e
+        error_on_request!(e)
       end
 
       def quiet_get_request(key)
