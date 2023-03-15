@@ -17,7 +17,8 @@ module Dalli
       end
 
       private
-
+      
+      # Retrieval Commands
       def safe_get(key, options = nil)
         req = RequestFormatter.standard_request(opkey: :getk, key: key)
         write(req)
