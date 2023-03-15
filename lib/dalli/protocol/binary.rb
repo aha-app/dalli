@@ -23,11 +23,7 @@ module Dalli
         write(req)
         response_processor.getk(key, cache_nils: cache_nils?(options)).last
       rescue Dalli::SocketCorruptionError => e
-        Dalli.logger.debug { e.inspect }
-        
-        # Close connection; connection manager logic will automatically reopen it after a delay.
-        # This raises its own network error handled upstream.
-        down!   
+        error_on_request!(e)
       end
 
       def quiet_get_request(key)
