@@ -89,13 +89,11 @@ module Dalli
       attr_accessor :options
 
       def self.open(host, port, options = {})
-        Timeout.timeout(options[:socket_timeout]) do
-          sock = new(host, port)
-          sock.options = { host: host, port: port }.merge(options)
-          init_socket_options(sock, options)
+        sock = new(host, port, connect_timeout: options[:socket_timeout])
+        sock.options = { host: host, port: port }.merge(options)
+        init_socket_options(sock, options)
 
-          options[:ssl_context] ? wrapping_ssl_socket(sock, host, options[:ssl_context]) : sock
-        end
+        options[:ssl_context] ? wrapping_ssl_socket(sock, host, options[:ssl_context]) : sock
       end
 
       def self.init_socket_options(sock, options)
@@ -103,6 +101,8 @@ module Dalli
         sock.setsockopt(::Socket::SOL_SOCKET, ::Socket::SO_KEEPALIVE, true) if options[:keepalive]
         sock.setsockopt(::Socket::SOL_SOCKET, ::Socket::SO_RCVBUF, options[:rcvbuf]) if options[:rcvbuf]
         sock.setsockopt(::Socket::SOL_SOCKET, ::Socket::SO_SNDBUF, options[:sndbuf]) if options[:sndbuf]
+        sock.setsockopt(::Socket::SOL_SOCKET, ::Socket::SO_RCVTIMEO, options[:socket_timeout]) if options[:socket_timeout]
+        sock.setsockopt(::Socket::SOL_SOCKET, ::Socket::SO_SNDTIMEO, options[:socket_timeout]) if options[:socket_timeout]
       end
 
       def self.wrapping_ssl_socket(tcp_socket, host, ssl_context)
